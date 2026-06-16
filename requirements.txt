@@ -14,3 +14,7 @@ huggingface-hub==0.36.2
 python-dotenv==1.1.0
 
 protobuf==5.29.5
+pymupdf4llm
+ollama
+google-generativeai
+langchain-groq
