@@ -2,7 +2,6 @@ streamlit==1.45.1
 
 langchain==0.3.25
 langchain-community==0.3.24
-langchain-google-genai==2.1.5
 
 faiss-cpu==1.12.0
 pypdf==5.5.0
@@ -12,9 +11,8 @@ transformers==4.57.1
 huggingface-hub==0.36.2
 
 python-dotenv==1.1.0
-
 protobuf==5.29.5
+
 pymupdf4llm
 ollama
-google-generativeai
 langchain-groq
