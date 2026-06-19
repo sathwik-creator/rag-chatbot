@@ -1,13 +1,9 @@
-from langchain_google_genai import ChatGoogleGenerativeAI
-from dotenv import load_dotenv
-import os
+from langchain_groq import ChatGroq
 
 from src.vector_db import load_vector_store
 
-load_dotenv()
 
-
-def get_rag_response(question):
+def get_rag_response(question, api_key):
 
     vectorstore = load_vector_store()
 
@@ -34,9 +30,9 @@ Question:
 Answer:
 """
 
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
+    llm = ChatGroq(
+        groq_api_key=api_key,
+        model_name="llama-3.3-70b-versatile",
         temperature=0
     )
 
