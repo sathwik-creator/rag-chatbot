@@ -7,7 +7,7 @@ def get_rag_response(question, llm_type, api_key=None):
 
     docs = vectorstore.similarity_search(
         question,
-        k=3
+        k=2
     )
 
     context = "\n\n".join(

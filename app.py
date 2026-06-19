@@ -41,11 +41,11 @@ if llm_choice == "Groq":
     if api_key:
         st.sidebar.success("✅ API Key Loaded")
     else:
-        st.sidebar.warning("Enter Groq API Key")
+        st.sidebar.warning("⚠️ Enter Groq API Key")
 
 else:
 
-    st.sidebar.success("✅ Using Local Ollama")
+    st.sidebar.success("✅ Using Ollama")
 
 # ==========================
 # PDF UPLOAD
@@ -69,21 +69,29 @@ if uploaded_file:
     )
 
     with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+        f.write(
+            uploaded_file.getbuffer()
+        )
 
     st.success(
         f"Uploaded: {uploaded_file.name}"
     )
 
     # ==========================
-    # VECTOR DB CREATION
+    # CREATE VECTOR STORE ONLY
+    # WHEN NEW PDF IS UPLOADED
     # ==========================
 
-    if "vector_ready" not in st.session_state:
+    if (
+        "vector_ready" not in st.session_state
+        or st.session_state.get("current_file") != uploaded_file.name
+    ):
 
         with st.spinner("📄 Loading PDF..."):
 
-            documents = load_pdf(file_path)
+            documents = load_pdf(
+                file_path
+            )
 
         st.success(
             f"Loaded {len(documents)} pages"
@@ -99,7 +107,9 @@ if uploaded_file:
             f"Created {len(chunks)} chunks"
         )
 
-        with st.spinner("🧠 Creating Embeddings & Vector Store..."):
+        with st.spinner(
+            "🧠 Creating Embeddings & Vector Store..."
+        ):
 
             vectorstore = create_vector_store(
                 chunks
@@ -109,14 +119,15 @@ if uploaded_file:
                 vectorstore
             )
 
+        st.session_state.vector_ready = True
+        st.session_state.current_file = uploaded_file.name
+
         st.success(
             "✅ Vector Database Ready"
         )
 
-        st.session_state.vector_ready = True
-
     # ==========================
-    # QUESTION
+    # QUESTION SECTION
     # ==========================
 
     question = st.text_input(
@@ -137,7 +148,10 @@ if uploaded_file:
 
             st.stop()
 
-        if llm_choice == "Groq" and not api_key:
+        if (
+            llm_choice == "Groq"
+            and not api_key
+        ):
 
             st.error(
                 "Please enter a Groq API Key."
