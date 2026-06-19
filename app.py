@@ -11,16 +11,18 @@ from src.rag_chain import get_rag_response
 
 st.set_page_config(
     page_title="RAG Chatbot",
-    page_icon="📄"
+    page_icon="📄",
+    layout="wide"
 )
 
 st.title("📄 RAG Chatbot")
+st.markdown("Ask questions from your PDF using Groq or Ollama")
 
 # ==========================
-# SIDEBAR SETTINGS
+# SIDEBAR
 # ==========================
 
-st.sidebar.title("⚙️ LLM Settings")
+st.sidebar.title("⚙️ Settings")
 
 llm_choice = st.sidebar.radio(
     "Choose LLM",
@@ -32,24 +34,18 @@ api_key = ""
 if llm_choice == "Groq":
 
     api_key = st.sidebar.text_input(
-        "Enter Groq API Key",
+        "Groq API Key",
         type="password"
     )
 
     if api_key:
-        st.sidebar.success(
-            "✅ Groq API Key Loaded"
-        )
+        st.sidebar.success("✅ API Key Loaded")
     else:
-        st.sidebar.warning(
-            "⚠️ Please Enter Groq API Key"
-        )
+        st.sidebar.warning("Enter Groq API Key")
 
 else:
 
-    st.sidebar.success(
-        "✅ Using Ollama"
-    )
+    st.sidebar.success("✅ Using Local Ollama")
 
 # ==========================
 # PDF UPLOAD
@@ -73,41 +69,55 @@ if uploaded_file:
     )
 
     with open(file_path, "wb") as f:
-        f.write(
-            uploaded_file.getbuffer()
-        )
+        f.write(uploaded_file.getbuffer())
 
     st.success(
         f"Uploaded: {uploaded_file.name}"
     )
 
-    documents = load_pdf(
-        file_path
-    )
+    # ==========================
+    # VECTOR DB CREATION
+    # ==========================
 
-    chunks = chunk_documents(
-        documents
-    )
+    if "vector_ready" not in st.session_state:
 
-    vectorstore = create_vector_store(
-        chunks
-    )
+        with st.spinner("📄 Loading PDF..."):
 
-    save_vector_store(
-        vectorstore
-    )
+            documents = load_pdf(file_path)
 
-    st.success(
-        "Vector Database Created Successfully"
-    )
+        st.success(
+            f"Loaded {len(documents)} pages"
+        )
 
-    st.write(
-        f"Pages Loaded: {len(documents)}"
-    )
+        with st.spinner("✂️ Creating Chunks..."):
 
-    st.write(
-        f"Chunks Created: {len(chunks)}"
-    )
+            chunks = chunk_documents(
+                documents
+            )
+
+        st.success(
+            f"Created {len(chunks)} chunks"
+        )
+
+        with st.spinner("🧠 Creating Embeddings & Vector Store..."):
+
+            vectorstore = create_vector_store(
+                chunks
+            )
+
+            save_vector_store(
+                vectorstore
+            )
+
+        st.success(
+            "✅ Vector Database Ready"
+        )
+
+        st.session_state.vector_ready = True
+
+    # ==========================
+    # QUESTION
+    # ==========================
 
     question = st.text_input(
         "Ask a question about the PDF"
@@ -136,36 +146,44 @@ if uploaded_file:
             st.stop()
 
         with st.spinner(
-            "Generating answer..."
+            "🤖 Generating Answer..."
         ):
 
-            answer, docs = get_rag_response(
-                question,
-                llm_choice,
-                api_key
-            )
+            try:
 
-        st.subheader(
-            "Answer"
-        )
+                answer, docs = get_rag_response(
+                    question,
+                    llm_choice,
+                    api_key
+                )
 
-        st.write(
-            answer
-        )
-
-        st.subheader(
-            "Sources"
-        )
-
-        for i, doc in enumerate(
-            docs,
-            start=1
-        ):
-
-            with st.expander(
-                f"Source {i}"
-            ):
+                st.subheader(
+                    "Answer"
+                )
 
                 st.write(
-                    doc.page_content
+                    answer
+                )
+
+                st.subheader(
+                    "Sources"
+                )
+
+                for i, doc in enumerate(
+                    docs,
+                    start=1
+                ):
+
+                    with st.expander(
+                        f"Source {i}"
+                    ):
+
+                        st.write(
+                            doc.page_content
+                        )
+
+            except Exception as e:
+
+                st.error(
+                    f"Error: {str(e)}"
                 )
