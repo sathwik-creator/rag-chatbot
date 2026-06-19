@@ -33,7 +33,6 @@ api_key = ""
 
 if llm_choice == "Groq":
 
-```
 api_key = st.sidebar.text_input(
     "Enter Groq API Key",
     type="password"
@@ -47,15 +46,11 @@ else:
     st.sidebar.warning(
         "⚠️ Please Enter Groq API Key"
     )
-```
-
 else:
 
-```
 st.sidebar.success(
     "✅ Using Ollama"
 )
-```
 
 # ==========================
 
@@ -69,8 +64,6 @@ type=["pdf"]
 )
 
 if uploaded_file:
-
-```
 os.makedirs(
     "uploads",
     exist_ok=True
@@ -178,4 +171,3 @@ if ask_button:
             st.write(
                 doc.page_content
             )
-```
