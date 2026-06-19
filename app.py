@@ -9,13 +9,36 @@ from src.vector_db import (
 )
 from src.rag_chain import get_rag_response
 
-
 st.set_page_config(
     page_title="RAG Chatbot",
     page_icon="📄"
 )
 
 st.title("📄 RAG Chatbot")
+
+# Sidebar
+st.sidebar.title("⚙️ LLM Settings")
+
+llm_choice = st.sidebar.radio(
+    "Choose LLM",
+    ["Groq", "Ollama"]
+)
+
+api_key = ""
+
+if llm_choice == "Groq":
+
+    api_key = st.sidebar.text_input(
+        "Groq API Key",
+        type="password"
+    )
+
+    if api_key:
+        st.sidebar.success("Groq API Key Loaded")
+
+else:
+
+    st.sidebar.success("Using Ollama Local Model")
 
 uploaded_file = st.file_uploader(
     "Upload PDF",
@@ -55,9 +78,17 @@ if uploaded_file:
 
     if question:
 
+        if llm_choice == "Groq" and not api_key:
+            st.error("Please enter a Groq API Key")
+            st.stop()
+
         with st.spinner("Generating answer..."):
 
-            answer, docs = get_rag_response(question)
+            answer, docs = get_rag_response(
+                question,
+                llm_choice,
+                api_key
+            )
 
         st.subheader("Answer")
         st.write(answer)

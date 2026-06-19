@@ -1,9 +1,7 @@
-from langchain_groq import ChatGroq
-
 from src.vector_db import load_vector_store
 
 
-def get_rag_response(question, api_key):
+def get_rag_response(question, llm_type, api_key=None):
 
     vectorstore = load_vector_store()
 
@@ -21,6 +19,9 @@ You are a helpful assistant.
 
 Answer the question using ONLY the context below.
 
+If the answer is not found in the context, say:
+'I could not find that information in the document.'
+
 Context:
 {context}
 
@@ -30,12 +31,21 @@ Question:
 Answer:
 """
 
-    llm = ChatGroq(
-        groq_api_key=api_key,
-        model_name="llama-3.3-70b-versatile",
-        temperature=0
-    )
+    if llm_type == "Groq":
 
-    response = llm.invoke(prompt)
+        from src.groq_llm import generate
 
-    return response.content, docs
+        answer = generate(
+            prompt,
+            api_key
+        )
+
+    else:
+
+        from src.ollama_llm import generate
+
+        answer = generate(
+            prompt
+        )
+
+    return answer, docs
