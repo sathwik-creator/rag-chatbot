@@ -1,8 +1,7 @@
 import pymupdf4llm
 
 
-def parse_pdf(pdf_path):
-
+def parse_pdf(pdf_path: str) -> list[str]:
     markdown = pymupdf4llm.to_markdown(pdf_path)
 
     sections = markdown.split("\n# ")
@@ -10,7 +9,6 @@ def parse_pdf(pdf_path):
     cleaned_sections = []
 
     for section in sections:
-
         section = section.strip()
 
         if len(section) > 100:

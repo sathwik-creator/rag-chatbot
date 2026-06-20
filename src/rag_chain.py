@@ -1,18 +1,29 @@
 from src.vector_db import load_vector_store
 
 
-def get_rag_response(question, llm_type, api_key=None):
-
+def retrieve_documents(
+    question: str,
+    k: int = 2,
+):
     vectorstore = load_vector_store()
 
-    docs = vectorstore.similarity_search(
+    return vectorstore.similarity_search(
         question,
-        k=2
+        k=k,
     )
 
-    context = "\n\n".join(
-        [doc.page_content for doc in docs]
+
+def get_rag_response(
+    question: str,
+    llm_type: str,
+    api_key: str | None = None,
+) -> tuple[str, list]:
+    docs = retrieve_documents(
+        question,
+        k=2,
     )
+
+    context = "\n\n".join(doc.page_content for doc in docs)
 
     prompt = f"""
 You are a helpful assistant.
@@ -32,20 +43,15 @@ Answer:
 """
 
     if llm_type == "Groq":
+        from src.groq_llm import generate as groq_generate
 
-        from src.groq_llm import generate
-
-        answer = generate(
+        answer = groq_generate(
             prompt,
-            api_key
+            api_key,
         )
-
     else:
+        from src.ollama_llm import generate as ollama_generate
 
-        from src.ollama_llm import generate
-
-        answer = generate(
-            prompt
-        )
+        answer = ollama_generate(prompt)
 
     return answer, docs

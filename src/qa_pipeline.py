@@ -1,8 +1,11 @@
 from src.section_store import load_sections
 
 
-def answer_question(question, llm_type, api_key=None):
-
+def answer_question(
+    question: str,
+    llm_type: str,
+    api_key: str | None = None,
+) -> str:
     sections = load_sections()
 
     context = "\n\n".join(sections)
@@ -26,18 +29,13 @@ Answer:
 """
 
     if llm_type == "Groq":
+        from src.groq_llm import generate as groq_generate
 
-        from src.groq_llm import generate
-
-        return generate(
+        return groq_generate(
             prompt,
-            api_key
+            api_key,
         )
 
-    else:
+    from src.ollama_llm import generate as ollama_generate
 
-        from src.ollama_llm import generate
-
-        return generate(
-            prompt
-        )
+    return ollama_generate(prompt)
